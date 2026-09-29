@@ -231,6 +231,22 @@ function renderJob() {
   }).join('') : '<tr><td colspan="11">Tidak ada hasil.</td></tr>';
 }
 
+function markClickedLink(link) {
+  if (!link || link.classList.contains('clicked-link')) return;
+  link.classList.add('clicked-link');
+  link.dataset.clicked = 'true';
+  if (!link.querySelector('.click-check')) {
+    link.insertAdjacentHTML('beforeend', ' <span class="click-check" aria-hidden="true">✓</span>');
+  }
+}
+
+$('sRows').addEventListener('click', event => {
+  const link = event.target.closest('a');
+  if (!link) return;
+  markClickedLink(link);
+  toast(`Dibuka: ${link.textContent.replace('✓', '').trim()}`);
+});
+
 $('sSearch').oninput = renderJob;
 $('sSort').onchange = renderJob;
 
