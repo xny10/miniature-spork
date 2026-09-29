@@ -1,0 +1,8 @@
+{
+  "name": "shopee-bulk-railway-iac",
+  "private": true,
+  "description": "Railway Infrastructure as Code support files for Shopee Bulk Extractor",
+  "dependencies": {
+    "railway": "latest"
+  }
+}

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Shopee Bulk Extractor</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div>
+      <span class="eyebrow">RAILWAY READY WEB APP</span>
+      <h1>Shopee Bulk Extractor</h1>
+      <p>Bulk shortlink Shopee → Shop ID + Product ID + Affiliate Offer URL.</p>
+    </div>
+    <span id="sStatus" class="status idle">Idle</span>
+  </header>
+
+  <div class="stats shopee-stats">
+    <div><span>Total</span><b id="sTotal">0</b></div>
+    <div><span>Selesai</span><b id="sProcessed">0</b></div>
+    <div><span>Berhasil</span><b id="sSuccess">0</b></div>
+    <div><span>Gagal</span><b id="sFailed">0</b></div>
+    <div><span>Antrean</span><b id="sQueued">0</b></div>
+    <div><span>Kecepatan</span><b id="sSpeed">0/mnt</b></div>
+  </div>
+
+  <div class="split">
+    <aside class="card side">
+      <div class="title-row">
+        <div>
+          <h2>Input Shopee Bulk</h2>
+          <p>Paste shortlink <code>s.shopee.co.id</code> atau CSV hasil grabber.</p>
+        </div>
+      </div>
+
+      <textarea id="shopeeInput" placeholder="https://s.shopee.co.id/xxxx&#10;https://s.shopee.co.id/yyyy&#10;&#10;atau paste CSV: Destination URL, Link Iklan Aktif"></textarea>
+      <label class="filebtn">Import TXT/CSV<input id="importFile" type="file" accept=".txt,.csv" hidden></label>
+
+      <div class="grid2">
+        <label>Concurrency<input id="concurrency" type="number" min="1" max="10" value="5"></label>
+        <label>Mode delay
+          <select id="delayMode">
+            <option value="instant">Tanpa delay</option>
+            <option value="fast">Cepat 0.5–1.5s</option>
+            <option value="normal" selected>Normal 2–6s</option>
+            <option value="safe">Aman 5–12s</option>
+            <option value="slow">Lambat 10–20s</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label>Delay min (ms)<input id="delayMin" type="number" value="2000" min="0"></label>
+        <label>Delay max (ms)<input id="delayMax" type="number" value="6000" min="0"></label>
+        <label>Max retry<input id="maxRetry" type="number" value="2" min="0" max="5"></label>
+      </div>
+
+      <div class="actiongrid">
+        <button id="sStart" class="primary">▶ Mulai</button>
+        <button id="sPause">Pause</button>
+        <button id="sResume">Lanjutkan</button>
+        <button id="sStop" class="danger">■ Stop</button>
+        <button id="sRetry">Retry Gagal</button>
+        <a class="button" href="/api/shopee/export.csv">Export CSV</a>
+        <button id="copyUnique">Copy Product ID Unik</button>
+        <button id="copyAllProducts">Copy Semua Product ID</button>
+        <button id="copyBrand">Copy Brand Offer</button>
+        <button id="copyProductOffer">Copy Product Offer</button>
+        <button id="dedupe">Hapus Product ID Sama</button>
+        <a class="button" href="/api/shopee/session.json">Download Session</a>
+        <label class="button">Load Session<input id="loadSession" type="file" accept=".json" hidden></label>
+        <button id="clearJob" class="danger ghost">Clear Storage</button>
+      </div>
+
+      <section class="saved-panel">
+        <div class="saved-head">
+          <div>
+            <h2>Data Tersimpan</h2>
+            <p>Klik card untuk membuka data URL, Shop ID, Product ID, dan hasil sebelumnya.</p>
+          </div>
+          <button id="saveCard" class="primary mini">+ Simpan</button>
+        </div>
+        <input id="sessionName" placeholder="Nama card/session, contoh: Campaign 29 Sep">
+        <div id="savedSessions" class="saved-list"></div>
+      </section>
+
+      <details>
+        <summary>Ambil kategori Brand Offer (opsional)</summary>
+        <p class="hint">Endpoint Affiliate Shopee dapat meminta sesi login. Cookie hanya dipakai untuk request ini dan tidak disimpan ke database.</p>
+        <textarea id="affiliateCookie" class="small" placeholder="Paste Cookie header di sini (opsional)"></textarea>
+        <button id="fetchBrand">Ambil Kategori Brand</button>
+      </details>
+      <div id="sMessage" class="message">Session job disimpan di SQLite.</div>
+    </aside>
+
+    <main class="card grow">
+      <div class="toolbar">
+        <input id="sSearch" placeholder="Search hasil...">
+        <select id="sSort">
+          <option value="default">Default</option>
+          <option value="activeDesc">Iklan aktif terbanyak</option>
+          <option value="activeAsc">Iklan aktif tersedikit</option>
+          <option value="productDesc">Iklan produk terbanyak</option>
+          <option value="productAsc">Iklan produk tersedikit</option>
+        </select>
+      </div>
+      <div class="tablewrap tall">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Shortlink</th><th>Shop ID</th><th>Product ID</th>
+              <th>Iklan Aktif Toko</th><th>Iklan Produk</th><th>Brand Offer</th>
+              <th>Product Offer</th><th>Iklan Aktif</th><th>Status</th><th>Error</th>
+            </tr>
+          </thead>
+          <tbody id="sRows"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
