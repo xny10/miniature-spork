@@ -267,15 +267,21 @@ $('fetchBrand').onclick = async () => {
 };
 
 $('saveCard').onclick = async () => {
+  const currentName = $('sessionName').value.trim();
+  const name = currentName || prompt('Nama card/session apa?', 'Campaign Shopee')?.trim();
+  if (!name) {
+    toast('Isi nama card dulu');
+    return;
+  }
   try {
     const data = await api('/api/shopee/sessions', {
       method: 'POST',
-      body: JSON.stringify({ name: $('sessionName').value.trim() }),
+      body: JSON.stringify({ name }),
     });
     state.sessions = data.sessions || [];
     $('sessionName').value = '';
     renderSessions();
-    toast('Data disimpan sebagai card');
+    toast(`Data disimpan: ${name}`);
   } catch (error) {
     toast(error.message);
   }
