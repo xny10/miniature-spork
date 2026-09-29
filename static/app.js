@@ -1,5 +1,5 @@
 const $ = id => document.getElementById(id);
-const state = { job: null, sessions: [] };
+const state = { job: null, sessions: [], clickedLinks: new Set(JSON.parse(localStorage.getItem('clickedLinks') || '[]')) };
 
 function toast(message) {
   const el = $('toast');
@@ -215,16 +215,18 @@ function renderJob() {
   $('sRows').innerHTML = rows.length ? rows.map((item, index) => {
     const brandOffer = item.shopId ? `https://affiliate.shopee.co.id/offer/brand_offer/${item.shopId}` : '';
     const productOffer = item.productId ? `https://affiliate.shopee.co.id/offer/product_offer/${item.productId}` : '';
+    const clickedClass = url => state.clickedLinks.has(url) ? ' class="clicked-link" data-clicked="true"' : '';
+    const clickedMark = url => state.clickedLinks.has(url) ? ' <span class="click-check" aria-hidden="true">✓</span>' : '';
     return `<tr>
       <td>${index + 1}</td>
-      <td><a href="${esc(item.shortUrl)}" target="_blank" rel="noopener">Buka</a></td>
+      <td><a href="${esc(item.shortUrl)}" target="_blank" rel="noopener"${clickedClass(item.shortUrl)}>${state.clickedLinks.has(item.shortUrl) ? 'Sudah dibuka' : 'Buka'}${clickedMark(item.shortUrl)}</a></td>
       <td>${esc(item.shopId || '—')}</td>
       <td>${esc(item.productId || '—')}</td>
       <td>${item.activeAdCount ?? (active.get(item.shopId) || '—')}</td>
       <td>${item.productAdCount ?? (products.get(item.productId) || '—')}</td>
-      <td>${brandOffer ? `<a href="${brandOffer}" target="_blank" rel="noopener">Offer</a>` : '—'}${item.brandCategory ? `<br><small>${esc(item.brandCategory)}</small>` : ''}</td>
-      <td>${productOffer ? `<a href="${productOffer}" target="_blank" rel="noopener">Produk</a>` : '—'}</td>
-      <td>${item.adLibraryUrl ? `<a href="${esc(item.adLibraryUrl)}" target="_blank" rel="noopener">Iklan</a>` : '—'}</td>
+      <td>${brandOffer ? `<a href="${brandOffer}" target="_blank" rel="noopener"${clickedClass(brandOffer)}>${state.clickedLinks.has(brandOffer) ? 'Sudah offer' : 'Offer'}${clickedMark(brandOffer)}</a>` : '—'}${item.brandCategory ? `<br><small>${esc(item.brandCategory)}</small>` : ''}</td>
+      <td>${productOffer ? `<a href="${productOffer}" target="_blank" rel="noopener"${clickedClass(productOffer)}>${state.clickedLinks.has(productOffer) ? 'Sudah produk' : 'Produk'}${clickedMark(productOffer)}</a>` : '—'}</td>
+      <td>${item.adLibraryUrl ? `<a href="${esc(item.adLibraryUrl)}" target="_blank" rel="noopener"${clickedClass(item.adLibraryUrl)}>${state.clickedLinks.has(item.adLibraryUrl) ? 'Sudah iklan' : 'Iklan'}${clickedMark(item.adLibraryUrl)}</a>` : '—'}</td>
       <td><span class="badge ${esc(item.status)}">${esc(item.status)}</span></td>
       <td title="${esc(item.brandOfferError || item.error || '')}">${esc((item.brandOfferError || item.error || '').slice(0, 80))}</td>
     </tr>`;
@@ -232,9 +234,12 @@ function renderJob() {
 }
 
 function markClickedLink(link) {
-  if (!link || link.classList.contains('clicked-link')) return;
+  if (!link) return;
+  state.clickedLinks.add(link.href);
+  localStorage.setItem('clickedLinks', JSON.stringify([...state.clickedLinks]));
   link.classList.add('clicked-link');
   link.dataset.clicked = 'true';
+  if (!link.textContent.includes('Sudah')) link.firstChild.textContent = `Sudah ${link.textContent.replace('✓', '').trim().toLowerCase()}`;
   if (!link.querySelector('.click-check')) {
     link.insertAdjacentHTML('beforeend', ' <span class="click-check" aria-hidden="true">✓</span>');
   }
